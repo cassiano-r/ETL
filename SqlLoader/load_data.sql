@@ -32,7 +32,7 @@ trailing nullcols
 
 
 # Execute the SQL*Loader in command line
-sqlldr userid=engenheiro/dsacademy control=loader1.ctl log=loader.log
+sqlldr userid=user_loader/testloader control=loader1.ctl log=loader.log
 
 
 
