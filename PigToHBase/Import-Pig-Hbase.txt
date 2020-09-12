@@ -1,0 +1,81 @@
+
+Parte 1 - Carregar dados no HDFS
+
+
+# Criar diretório
+hdfs dfs -mkdir /user/dados
+hdfs dfs -mkdir /user/dados/clientes
+
+# Carregar dados no HDFS
+hdfs dfs -copyFromLocal clientes.txt /user/dados/clientes
+
+
+Parte 2 - Criar tabela no HBase
+
+# Abrir o shell
+hbase shell
+
+# Cria uma tabela com uma column family para receber os dados
+create 'clientes', 'dados_clientes'
+
+ 
+Parte 3 - Carregar dados com Pig
+
+# Inicie o Job History Server
+mr-jobhistory-daemon.sh start historyserver
+
+# Abrir o shell do Pig
+pig -x mapreduce (em caso de probemas, use pig -x local)
+
+# Navegar até o diretório
+cd /user/dados/clientes;
+
+# Visualizar o conteúdo do arquivo
+cat clientes.txt;
+
+# Carregar dados do HDFS para o Pig
+dados = LOAD 'clientes.txt' USING PigStorage(',') AS (
+           id:chararray,
+           nome:chararray,
+           sobrenome:chararray,
+           idade:int,
+           funcao:chararray
+);
+
+# Testa os dados
+dump dados;
+
+# Usando Pig Store
+STORE dados INTO 'hbase://clientes' USING org.apache.pig.backend.hadoop.hbase.HBaseStorage(
+'dados_clientes:nome 
+ dados_clientes:sobrenome 
+ dados_clientes:idade 
+ dados_clientes:funcao'
+);
+
+
+# Parte 3 - Manipulando dados no HBase
+
+# Abrir o shell
+hbase shell
+
+# Scan na tabela
+scan 'clientes'
+count 'clientes'
+get 'clientes', '1100002', {COLUMN => 'dados_clientes:nome'}
+put 'clientes', '1100002', 'dados_clientes:nome', 'Bob'
+put 'clientes', '2100002', 'dados_clientes:nome', 'Zico'
+put 'clientes', '2100002', 'dados_clientes:sobrenome', 'Galinho'
+put 'clientes', '2100002', 'dados_clientes:idade', '50'
+put 'clientes', '2100002', 'dados_clientes:funcao', 'Jogador'
+delete 'clientes', '2100002', 'dados_clientes:funcao'
+deleteall 'clientes', '2100002'
+
+
+
+
+
+
+
+
+
